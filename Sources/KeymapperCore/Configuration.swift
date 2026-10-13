@@ -61,7 +61,7 @@ public struct Configuration: Codable, Equatable {
         Binding(input: Chord(key: "b", modifiers: [.escape]), action: Action(type: .openApp, bundleIdentifier: "com.google.Chrome")),
         Binding(input: Chord(key: "l", modifiers: [.escape]), action: Action(type: .openApp, bundleIdentifier: "com.linear")),
         Binding(input: Chord(key: "o", modifiers: [.escape]), action: Action(type: .openApp, bundleIdentifier: "md.obsidian")),
-        Binding(input: Chord(key: "t", modifiers: [.escape]), action: Action(type: .openApp, bundleIdentifier: "com.mitchellh.ghostty")),
+        Binding(input: Chord(key: "g", modifiers: [.escape]), action: Action(type: .openApp, bundleIdentifier: "com.mitchellh.ghostty")),
         Binding(input: Chord(key: "s", modifiers: [.escape]), action: Action(type: .openApp, bundleIdentifier: "com.tinyspeck.slackmacgap")),
         Binding(input: Chord(key: "n", modifiers: [.escape]), action: Action(type: .openApp, bundleIdentifier: "notion.id"))
     ])

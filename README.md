@@ -36,7 +36,7 @@ Hold the physical **Escape** key for at least **400 ms**, keep it held, then pre
 | Either Shift + Space | Backspace, including held-key repeat |
 | Long-press Escape + C | Codex |
 | Long-press Escape + B | Chrome |
-| Long-press Escape + T | Ghostty |
+| Long-press Escape + G | Ghostty |
 | Long-press Escape + S | Slack |
 | Long-press Escape + L | Linear |
 | Long-press Escape + O | Obsidian |
