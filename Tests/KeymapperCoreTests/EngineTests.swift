@@ -2,9 +2,28 @@ import Foundation
 @testable import KeymapperCore
 
 final class EngineTests {
+    func testControlOptionLaunchesImmediatelyAndOnlyWithBothModifiers() {
+        for binding in Configuration.initial.bindings where binding.action.type == .openApp {
+            let engine = Engine(configuration: Configuration(bindings: Configuration.initial.bindings, superKey: .controlOption))
+            let code = Keys.codes[binding.input.key]!
+            expectEqual(engine.process(code: code, down: true, modifiers: [.control, .option], timestamp: 0), .launch(binding.action.bundleIdentifier!))
+            expectEqual(engine.process(code: code, down: true, repeated: true, modifiers: [.control, .option], timestamp: 0.01), .suppress)
+            expectEqual(engine.process(code: code, down: false), .suppress)
+            for modifiers: Set<Modifier> in [[], [.control], [.option], [.fn], [.control, .option, .shift], [.control, .option, .command]] {
+                expectEqual(engine.process(code: code, down: true, modifiers: modifiers, timestamp: 0.02), .pass)
+                _ = engine.process(code: code, down: false, modifiers: modifiers)
+            }
+        }
+        let engine = Engine(configuration: Configuration(bindings: Configuration.initial.bindings, superKey: .controlOption))
+        expectEqual(engine.process(code: 0, down: true, modifiers: [.control, .option]), .pass)
+        expectEqual(engine.process(code: 49, down: true, modifiers: [.shift]), .send(Stroke(code: 51), down: true, repeated: false))
+        _ = engine.reset()
+        expectEqual(engine.process(code: 5, down: true, modifiers: [.control]), .pass)
+        expectEqual(engine.process(code: 5, down: true, repeated: true, modifiers: [.control, .option]), .pass)
+    }
     func testEverySuperKeyWithNativeShortcutsAndRelease() {
         for modifier in [Modifier.fn, .shift, .control, .option, .command] {
-            let engine = Engine(configuration: Configuration(bindings: Configuration.initial.bindings, superKey: modifier))
+            let engine = Engine(configuration: Configuration(bindings: Configuration.initial.bindings, superKey: SuperKey(rawValue: modifier.rawValue)))
             engine.launcherKeyChanged(down: true, timestamp: 0)
             expectEqual(engine.process(code: 5, down: true, modifiers: [modifier], timestamp: 0.399), .pass)
             _ = engine.process(code: 5, down: false, modifiers: [modifier], timestamp: 0.4)

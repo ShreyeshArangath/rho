@@ -4,13 +4,20 @@ import Foundation
 final class ConfigurationTests {
     func testSuperKeyCompatibilityAndValidation() throws {
         let old = try Configuration.decode(Data("{\"version\":1,\"bindings\":[]}".utf8))
-        expectEqual(old.launcherModifier, .fn)
+        expectEqual(old.launcher, .fn)
         for modifier in [Modifier.fn, .shift, .control, .option, .command] {
-            let config = Configuration(bindings: Configuration.initial.bindings, superKey: modifier)
+            let config = Configuration(bindings: Configuration.initial.bindings, superKey: SuperKey(rawValue: modifier.rawValue))
             expectEqual(try Configuration.decode(JSONEncoder().encode(config)), config)
         }
         expectThrows(try Configuration.decode(Data("{\"version\":1,\"superKey\":\"unknown\",\"bindings\":[]}".utf8)))
+        let combo = Configuration(bindings: Configuration.initial.bindings, superKey: .controlOption)
+        expectEqual(try Configuration.decode(JSONEncoder().encode(combo)), combo)
         let action = Action(type: .openApp, bundleIdentifier: "com.example.app")
+        expectThrows(try Configuration(bindings: [
+            Binding(input: Chord(key: "c", modifiers: [.fn]), action: action),
+            Binding(input: Chord(key: "c", modifiers: [.control, .option]), action: action)
+        ], superKey: .controlOption).validate())
+        expectThrows(try Configuration(bindings: [Binding(input: Chord(key: "c", modifiers: [.fn, .option]), action: action)], superKey: .controlOption).validate())
         expectThrows(try Configuration(bindings: [
             Binding(input: Chord(key: "c", modifiers: [.fn]), action: action),
             Binding(input: Chord(key: "c", modifiers: [.command]), action: action)

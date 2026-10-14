@@ -55,7 +55,7 @@ final class EventTap {
         if flags.contains(.maskCommand) { modifiers.insert(.command) }
         if flags.contains(.maskSecondaryFn) { modifiers.insert(.fn) }
         if type == .flagsChanged {
-            engine.launcherKeyChanged(down: modifiers.contains(engine.configuration.launcherModifier), timestamp: timestamp)
+            engine.launcherKeyChanged(down: engine.configuration.launcher.modifiers.isSubset(of: modifiers), timestamp: timestamp)
             return Unmanaged.passUnretained(event)
         }
         let output = engine.process(code: code,

@@ -58,12 +58,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         toggleItem = add("Pause", #selector(toggle), to: menu)
         _ = add("Grant Accessibility Permission…", #selector(grantPermission), to: menu)
         let superKeyMenu = NSMenu()
-        for (title, modifier) in [("Fn / Globe", Modifier.fn), ("Shift ⇧", .shift), ("Control ⌃", .control), ("Option ⌥", .option), ("Command ⌘", .command)] {
+        for (title, modifier) in [("Fn / Globe (hold 400 ms)", SuperKey.fn), ("Shift ⇧", .shift), ("Control ⌃", .control), ("Option ⌥", .option), ("Command ⌘", .command), ("Control + Option ⌃⌥ (instant)", .controlOption)] {
             let choice = add(title, #selector(selectSuperKey(_:)), to: superKeyMenu)
             choice.representedObject = modifier.rawValue
             superKeyItems.append(choice)
         }
-        let superKeyItem = NSMenuItem(title: "Super Key (hold 400 ms)", action: nil, keyEquivalent: "")
+        let superKeyItem = NSMenuItem(title: "Super Key", action: nil, keyEquivalent: "")
         superKeyItem.submenu = superKeyMenu
         menu.addItem(superKeyItem)
         _ = add("Open Configuration", #selector(openConfig), to: menu)
@@ -145,11 +145,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
     private func updateSuperKeyMenu() {
         for entry in superKeyItems {
-            entry.state = (entry.representedObject as? String) == eventTap?.engine.configuration.launcherModifier.rawValue ? .on : .off
+            entry.state = (entry.representedObject as? String) == eventTap?.engine.configuration.launcher.rawValue ? .on : .off
         }
     }
     @objc private func selectSuperKey(_ sender: NSMenuItem) {
-        guard let raw = sender.representedObject as? String, let modifier = Modifier(rawValue: raw) else { return }
+        guard let raw = sender.representedObject as? String, let modifier = SuperKey(rawValue: raw) else { return }
         do {
             // Read the saved file so a menu change cannot overwrite edits made in an editor.
             var config = try Storage.loadConfiguration()

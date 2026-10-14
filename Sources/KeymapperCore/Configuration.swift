@@ -1,6 +1,20 @@
 import Foundation
 
 public enum Modifier: String, Codable, Hashable { case shift, control, option, command, fn }
+public enum SuperKey: String, Codable, CaseIterable {
+    case fn, shift, control, option, command, controlOption
+    public var modifiers: Set<Modifier> {
+        switch self {
+        case .fn: return [.fn]
+        case .shift: return [.shift]
+        case .control: return [.control]
+        case .option: return [.option]
+        case .command: return [.command]
+        case .controlOption: return [.control, .option]
+        }
+    }
+    public var holdDuration: TimeInterval { self == .controlOption ? 0 : 0.4 }
+}
 public struct Chord: Codable, Equatable {
     public var key: String
     public var modifiers: [Modifier]
@@ -24,14 +38,14 @@ public struct Binding: Codable, Equatable {
 public struct Configuration: Codable, Equatable {
     public var version: Int
     public var bindings: [Binding]
-    public var superKey: Modifier?
-    public var launcherModifier: Modifier { superKey ?? .fn }
-    public init(version: Int = 1, bindings: [Binding], superKey: Modifier? = nil) {
+    public var superKey: SuperKey?
+    public var launcher: SuperKey { superKey ?? .fn }
+    public init(version: Int = 1, bindings: [Binding], superKey: SuperKey? = nil) {
         self.version = version; self.bindings = bindings; self.superKey = superKey
     }
     public func physicalModifiers(for chord: Chord) -> Set<Modifier> {
         var modifiers = Set(chord.modifiers)
-        if modifiers.remove(.fn) != nil { modifiers.insert(launcherModifier) }
+        if modifiers.remove(.fn) != nil { modifiers.formUnion(launcher.modifiers) }
         return modifiers
     }
     public func validate() throws {
@@ -41,8 +55,8 @@ public struct Configuration: Codable, Equatable {
             let label = "Binding \(index + 1)"
             guard Keys.codes[binding.input.key] != nil else { throw ConfigError("\(label): unknown or reserved input key '\(binding.input.key)'.") }
             guard Set(binding.input.modifiers).count == binding.input.modifiers.count else { throw ConfigError("\(label): repeated input modifier.") }
-            if binding.input.modifiers.contains(.fn), launcherModifier != .fn,
-               binding.input.modifiers.contains(launcherModifier) {
+            if binding.input.modifiers.contains(.fn), launcher != .fn,
+               !Set(binding.input.modifiers.filter { $0 != .fn }).isDisjoint(with: launcher.modifiers) {
                 throw ConfigError("\(label): super key duplicates an input modifier.")
             }
             let signature = binding.input.key + ":" + physicalModifiers(for: binding.input).map(\.rawValue).sorted().joined(separator: "+")

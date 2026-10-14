@@ -48,7 +48,9 @@ Only exact modifier combinations match. For example, Command + Shift + Space ret
 
 ## Configure shortcuts
 
-Choose **Super Key (hold 400 ms)** from the **ρ** menu to select Fn/Globe, Shift, Control, Option, or Command. Either side of the selected modifier works. The checkmark shows the current choice. Changes apply immediately and survive restarts; app letters stay the same. Fn/Globe remains the default.
+Choose **Super Key** from the **ρ** menu to select Fn/Globe, Shift, Control, Option, Command, or **Control + Option**. Either side of the selected modifier works. The checkmark shows the current choice. Changes apply immediately and survive restarts; app letters stay the same. Fn/Globe remains the default for new installations.
+
+**Control + Option** launches immediately: hold both and press the app letter, with no delay. Either side of each modifier works. Control or Option alone keeps its normal behavior. Unassigned combinations and combinations with extra modifiers pass through. This combination overlaps VoiceOver’s default modifier; choose another super key if you use VoiceOver. Single-modifier selections still require a 400 ms hold.
 
 Ordinary shortcuts still work when you press their letter before 400 ms. Holding your selected modifier past 400 ms reserves the configured launcher letters for rho, so choose a modifier you can spare for that gesture. Shift + Space still sends Backspace.
 
@@ -85,7 +87,7 @@ Example configuration:
 }
 ```
 
-The optional `superKey` field accepts `fn`, `shift`, `control`, `option`, or `command`; omitted means `fn`. In chord inputs, `fn` names the selected super key. Existing launcher bindings need no edits when you change it. A selection that would create duplicate shortcuts or duplicate modifiers is rejected without changing the saved settings.
+The optional `superKey` field accepts `fn`, `shift`, `control`, `option`, `command`, or `controlOption`; omitted means `fn`. In chord inputs, `fn` names the selected super key. Existing launcher bindings need no edits when you change it. A selection that would create duplicate shortcuts or duplicate modifiers is rejected without changing the saved settings.
 
 Input modifiers are `shift`, `control`, `option`, `command`, and `fn`. The input `modifiers` array is required; modifier order does not matter.
 

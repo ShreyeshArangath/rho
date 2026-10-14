@@ -11,7 +11,6 @@ public enum Output: Equatable {
     case launch(String)
 }
 public final class Engine {
-    public static let launcherHoldDuration: TimeInterval = 0.4
     public var configuration: Configuration
     private var launcherStartedAt: TimeInterval?
     private var launcherCancelled = false
@@ -25,7 +24,7 @@ public final class Engine {
     }
     public func process(code: UInt16, down: Bool, repeated: Bool = false, modifiers: Set<Modifier> = [],
                         timestamp: TimeInterval = ProcessInfo.processInfo.systemUptime) -> Output {
-        if !modifiers.contains(configuration.launcherModifier) { launcherKeyChanged(down: false, timestamp: timestamp) }
+        if !configuration.launcher.modifiers.isSubset(of: modifiers) { launcherKeyChanged(down: false, timestamp: timestamp) }
         if !down {
             passed.remove(code)
             guard let action = active.removeValue(forKey: code) else { return .pass }
@@ -34,8 +33,8 @@ public final class Engine {
         if let action = active[code] { return output(action, down: true, repeated: repeated) }
         if passed.contains(code) { return .pass }
         guard !repeated else { passed.insert(code); return .pass }
-        let launcherReady = launcherStartedAt.map { timestamp >= $0 + Self.launcherHoldDuration } == true && !launcherCancelled
-        if modifiers.contains(configuration.launcherModifier), !launcherReady { launcherCancelled = true }
+        let launcherReady = configuration.launcher.holdDuration == 0 || (launcherStartedAt.map { timestamp >= $0 + configuration.launcher.holdDuration } == true && !launcherCancelled)
+        if configuration.launcher.modifiers.isSubset(of: modifiers), !launcherReady { launcherCancelled = true }
         guard let binding = configuration.bindings.first(where: {
             Keys.codes[$0.input.key] == code && configuration.physicalModifiers(for: $0.input) == modifiers
         }) else { passed.insert(code); return .pass }

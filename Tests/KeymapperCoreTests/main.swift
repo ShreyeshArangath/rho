@@ -26,6 +26,7 @@ tests.append(("ConfigurationTests.testRejectInvalidVersionsKeysAndActions", conf
 tests.append(("ConfigurationTests.testMalformedJSONAndDuplicateModifiers", configurationTests.testMalformedJSONAndDuplicateModifiers))
 tests.append(("ConfigurationTests.testSuperKeyCompatibilityAndValidation", configurationTests.testSuperKeyCompatibilityAndValidation))
 let engineTests = EngineTests()
+tests.append(("EngineTests.testControlOptionLaunchesImmediatelyAndOnlyWithBothModifiers", engineTests.testControlOptionLaunchesImmediatelyAndOnlyWithBothModifiers))
 tests.append(("EngineTests.testEverySuperKeyWithNativeShortcutsAndRelease", engineTests.testEverySuperKeyWithNativeShortcutsAndRelease))
 tests.append(("EngineTests.testChangingSuperKeyClearsHoldAndKeepsActions", engineTests.testChangingSuperKeyClearsHoldAndKeepsActions))
 tests.append(("EngineTests.testFunctionThresholdAndQuickChordCancellation", engineTests.testFunctionThresholdAndQuickChordCancellation))
