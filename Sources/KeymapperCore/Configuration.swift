@@ -24,7 +24,16 @@ public struct Binding: Codable, Equatable {
 public struct Configuration: Codable, Equatable {
     public var version: Int
     public var bindings: [Binding]
-    public init(version: Int = 1, bindings: [Binding]) { self.version = version; self.bindings = bindings }
+    public var superKey: Modifier?
+    public var launcherModifier: Modifier { superKey ?? .fn }
+    public init(version: Int = 1, bindings: [Binding], superKey: Modifier? = nil) {
+        self.version = version; self.bindings = bindings; self.superKey = superKey
+    }
+    public func physicalModifiers(for chord: Chord) -> Set<Modifier> {
+        var modifiers = Set(chord.modifiers)
+        if modifiers.remove(.fn) != nil { modifiers.insert(launcherModifier) }
+        return modifiers
+    }
     public func validate() throws {
         guard version == 1 else { throw ConfigError("Unsupported configuration version \(version); expected 1.") }
         var seen = Set<String>()
@@ -32,7 +41,11 @@ public struct Configuration: Codable, Equatable {
             let label = "Binding \(index + 1)"
             guard Keys.codes[binding.input.key] != nil else { throw ConfigError("\(label): unknown or reserved input key '\(binding.input.key)'.") }
             guard Set(binding.input.modifiers).count == binding.input.modifiers.count else { throw ConfigError("\(label): repeated input modifier.") }
-            let signature = binding.input.key + ":" + binding.input.modifiers.map(\.rawValue).sorted().joined(separator: "+")
+            if binding.input.modifiers.contains(.fn), launcherModifier != .fn,
+               binding.input.modifiers.contains(launcherModifier) {
+                throw ConfigError("\(label): super key duplicates an input modifier.")
+            }
+            let signature = binding.input.key + ":" + physicalModifiers(for: binding.input).map(\.rawValue).sorted().joined(separator: "+")
             guard seen.insert(signature).inserted else { throw ConfigError("\(label): duplicate shortcut.") }
             switch binding.action.type {
             case .sendKey:

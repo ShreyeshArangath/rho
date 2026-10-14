@@ -11,21 +11,21 @@ public enum Output: Equatable {
     case launch(String)
 }
 public final class Engine {
-    public static let functionHoldDuration: TimeInterval = 0.4
+    public static let launcherHoldDuration: TimeInterval = 0.4
     public var configuration: Configuration
-    private var functionStartedAt: TimeInterval?
-    private var functionCancelled = false
+    private var launcherStartedAt: TimeInterval?
+    private var launcherCancelled = false
     private var active: [UInt16: Action] = [:]
     private var passed = Set<UInt16>()
     public init(configuration: Configuration) { self.configuration = configuration }
-    public func functionKeyChanged(down: Bool, timestamp: TimeInterval) {
+    public func launcherKeyChanged(down: Bool, timestamp: TimeInterval) {
         if down {
-            if functionStartedAt == nil { functionStartedAt = timestamp; functionCancelled = false }
-        } else { functionStartedAt = nil; functionCancelled = false }
+            if launcherStartedAt == nil { launcherStartedAt = timestamp; launcherCancelled = false }
+        } else { launcherStartedAt = nil; launcherCancelled = false }
     }
     public func process(code: UInt16, down: Bool, repeated: Bool = false, modifiers: Set<Modifier> = [],
                         timestamp: TimeInterval = ProcessInfo.processInfo.systemUptime) -> Output {
-        if !modifiers.contains(.fn) { functionKeyChanged(down: false, timestamp: timestamp) }
+        if !modifiers.contains(configuration.launcherModifier) { launcherKeyChanged(down: false, timestamp: timestamp) }
         if !down {
             passed.remove(code)
             guard let action = active.removeValue(forKey: code) else { return .pass }
@@ -34,16 +34,14 @@ public final class Engine {
         if let action = active[code] { return output(action, down: true, repeated: repeated) }
         if passed.contains(code) { return .pass }
         guard !repeated else { passed.insert(code); return .pass }
-        if modifiers.contains(.fn) {
-            guard let started = functionStartedAt, !functionCancelled,
-                  timestamp >= started + Self.functionHoldDuration else {
-                // Preserve native Fn chords until the long press has activated.
-                functionCancelled = true; passed.insert(code); return .pass
-            }
-        }
+        let launcherReady = launcherStartedAt.map { timestamp >= $0 + Self.launcherHoldDuration } == true && !launcherCancelled
+        if modifiers.contains(configuration.launcherModifier), !launcherReady { launcherCancelled = true }
         guard let binding = configuration.bindings.first(where: {
-            Keys.codes[$0.input.key] == code && Set($0.input.modifiers) == modifiers
+            Keys.codes[$0.input.key] == code && configuration.physicalModifiers(for: $0.input) == modifiers
         }) else { passed.insert(code); return .pass }
+        if binding.input.modifiers.contains(.fn), !launcherReady {
+            passed.insert(code); return .pass
+        }
         active[code] = binding.action
         return output(binding.action, down: true, repeated: false)
     }
@@ -60,7 +58,7 @@ public final class Engine {
             guard action.type == .sendKey else { return nil }
             return Stroke(code: Keys.codes[action.key!]!, modifiers: Set(action.modifiers ?? []))
         }
-        active.removeAll(); passed.removeAll(); functionStartedAt = nil; functionCancelled = false
+        active.removeAll(); passed.removeAll(); launcherStartedAt = nil; launcherCancelled = false
         return releases
     }
 }

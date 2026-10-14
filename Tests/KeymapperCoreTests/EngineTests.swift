@@ -2,20 +2,50 @@ import Foundation
 @testable import KeymapperCore
 
 final class EngineTests {
+    func testEverySuperKeyWithNativeShortcutsAndRelease() {
+        for modifier in [Modifier.fn, .shift, .control, .option, .command] {
+            let engine = Engine(configuration: Configuration(bindings: Configuration.initial.bindings, superKey: modifier))
+            engine.launcherKeyChanged(down: true, timestamp: 0)
+            expectEqual(engine.process(code: 5, down: true, modifiers: [modifier], timestamp: 0.399), .pass)
+            _ = engine.process(code: 5, down: false, modifiers: [modifier], timestamp: 0.4)
+            expectEqual(engine.process(code: 8, down: true, modifiers: [modifier], timestamp: 1), .pass)
+            engine.launcherKeyChanged(down: false, timestamp: 1.1)
+            engine.launcherKeyChanged(down: true, timestamp: 2)
+            expectEqual(engine.process(code: 5, down: true, modifiers: [modifier], timestamp: 2.4), .launch("com.mitchellh.ghostty"))
+            expectEqual(engine.process(code: 5, down: true, repeated: true, modifiers: [modifier], timestamp: 2.5), .suppress)
+            engine.launcherKeyChanged(down: false, timestamp: 2.6)
+            expectEqual(engine.process(code: 5, down: false), .suppress)
+            expectEqual(engine.process(code: 49, down: true, modifiers: [.shift], timestamp: 3), .send(Stroke(code: 51), down: true, repeated: false))
+            _ = engine.reset()
+            engine.launcherKeyChanged(down: true, timestamp: 4)
+            let extra: Modifier = modifier == .command ? .control : .command
+            expectEqual(engine.process(code: 5, down: true, modifiers: [modifier, extra], timestamp: 4.5), .pass)
+        }
+    }
+    func testChangingSuperKeyClearsHoldAndKeepsActions() {
+        let engine = Engine(configuration: .initial)
+        engine.launcherKeyChanged(down: true, timestamp: 0)
+        _ = engine.reset()
+        engine.configuration.superKey = .option
+        expectEqual(engine.process(code: 5, down: true, modifiers: [.option], timestamp: 1), .pass)
+        _ = engine.reset()
+        engine.launcherKeyChanged(down: true, timestamp: 2)
+        expectEqual(engine.process(code: 5, down: true, modifiers: [.option], timestamp: 2.5), .launch("com.mitchellh.ghostty"))
+    }
     func testFunctionThresholdAndQuickChordCancellation() {
         let engine = Engine(configuration: .initial)
-        engine.functionKeyChanged(down: true, timestamp: 0)
+        engine.launcherKeyChanged(down: true, timestamp: 0)
         expectEqual(engine.process(code: 5, down: true, modifiers: [.fn], timestamp: 0.399), .pass)
         _ = engine.process(code: 5, down: false, modifiers: [.fn], timestamp: 0.4)
         expectEqual(engine.process(code: 8, down: true, modifiers: [.fn], timestamp: 1), .pass)
-        engine.functionKeyChanged(down: false, timestamp: 1.1)
-        engine.functionKeyChanged(down: true, timestamp: 2)
+        engine.launcherKeyChanged(down: false, timestamp: 1.1)
+        engine.launcherKeyChanged(down: true, timestamp: 2)
         expectEqual(engine.process(code: 5, down: true, modifiers: [.fn], timestamp: 2.4), .launch("com.mitchellh.ghostty"))
     }
     func testFunctionMustStayHeld() {
         let engine = Engine(configuration: .initial)
-        engine.functionKeyChanged(down: true, timestamp: 0)
-        engine.functionKeyChanged(down: false, timestamp: 0.5)
+        engine.launcherKeyChanged(down: true, timestamp: 0)
+        engine.launcherKeyChanged(down: false, timestamp: 0.5)
         expectEqual(engine.process(code: 5, down: true, timestamp: 0.6), .pass)
     }
     func testFunctionFlagWithoutPressDoesNotLaunch() {
@@ -25,7 +55,7 @@ final class EngineTests {
     func testAllSevenDefaultLaunchersAfterLongPress() {
         for binding in Configuration.initial.bindings where binding.action.type == .openApp {
             let engine = Engine(configuration: .initial)
-            engine.functionKeyChanged(down: true, timestamp: 0)
+            engine.launcherKeyChanged(down: true, timestamp: 0)
             expectEqual(engine.process(code: Keys.codes[binding.input.key]!, down: true, modifiers: [.fn], timestamp: 0.5), .launch(binding.action.bundleIdentifier!))
         }
     }
@@ -58,33 +88,33 @@ final class EngineTests {
     }
     func testLaunchOnceAndConsumesLetterUpAfterFunctionRelease() {
         let engine = Engine(configuration: .initial)
-        engine.functionKeyChanged(down: true, timestamp: 0)
+        engine.launcherKeyChanged(down: true, timestamp: 0)
         expectEqual(engine.process(code: 8, down: true, modifiers: [.fn], timestamp: 0.4), .launch("com.openai.codex"))
         expectEqual(engine.process(code: 8, down: true, repeated: true, modifiers: [.fn], timestamp: 0.5), .suppress)
-        engine.functionKeyChanged(down: false, timestamp: 0.6)
+        engine.launcherKeyChanged(down: false, timestamp: 0.6)
         expectEqual(engine.process(code: 8, down: false), .suppress)
     }
     func testUnknownFunctionChordPassesThrough() {
         let engine = Engine(configuration: .initial)
-        engine.functionKeyChanged(down: true, timestamp: 0)
+        engine.launcherKeyChanged(down: true, timestamp: 0)
         expectEqual(engine.process(code: 0, down: true, modifiers: [.fn], timestamp: 0.5), .pass)
         expectEqual(engine.process(code: 0, down: false, modifiers: [.fn]), .pass)
     }
     func testAdditionalModifiersDoNotLaunch() {
         let engine = Engine(configuration: .initial)
-        engine.functionKeyChanged(down: true, timestamp: 0)
+        engine.launcherKeyChanged(down: true, timestamp: 0)
         expectEqual(engine.process(code: 8, down: true, modifiers: [.fn, .command], timestamp: 0.5), .pass)
     }
     func testMissingReleaseFlagsClearFunctionHold() {
         let engine = Engine(configuration: .initial)
-        engine.functionKeyChanged(down: true, timestamp: 0)
+        engine.launcherKeyChanged(down: true, timestamp: 0)
         expectEqual(engine.process(code: 0, down: true, timestamp: 0.5), .pass)
         expectEqual(engine.process(code: 5, down: true, modifiers: [.fn], timestamp: 1), .pass)
     }
     func testResetReleasesSyntheticKeysAndClearsFunction() {
         let engine = Engine(configuration: .initial)
         _ = engine.process(code: 49, down: true, modifiers: [.shift])
-        engine.functionKeyChanged(down: true, timestamp: 0)
+        engine.launcherKeyChanged(down: true, timestamp: 0)
         expectEqual(engine.reset(), [Stroke(code: 51)])
         expectEqual(engine.process(code: 49, down: false), .pass)
         expectEqual(engine.process(code: 5, down: true, modifiers: [.fn], timestamp: 1), .pass)
@@ -93,7 +123,7 @@ final class EngineTests {
         let config = Configuration(bindings: [Binding(input: Chord(key: "a", modifiers: [.fn]), action: Action(type: .sendKey, key: "left", modifiers: [.command, .shift]))])
         try config.validate()
         let engine = Engine(configuration: config)
-        engine.functionKeyChanged(down: true, timestamp: 0)
+        engine.launcherKeyChanged(down: true, timestamp: 0)
         let target = Stroke(code: 123, modifiers: [.command, .shift])
         expectEqual(engine.process(code: 0, down: true, modifiers: [.fn], timestamp: 0.5), .send(target, down: true, repeated: false))
         expectEqual(engine.process(code: 0, down: false), .send(target, down: false, repeated: false))

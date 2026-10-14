@@ -2,6 +2,21 @@ import Foundation
 @testable import KeymapperCore
 
 final class ConfigurationTests {
+    func testSuperKeyCompatibilityAndValidation() throws {
+        let old = try Configuration.decode(Data("{\"version\":1,\"bindings\":[]}".utf8))
+        expectEqual(old.launcherModifier, .fn)
+        for modifier in [Modifier.fn, .shift, .control, .option, .command] {
+            let config = Configuration(bindings: Configuration.initial.bindings, superKey: modifier)
+            expectEqual(try Configuration.decode(JSONEncoder().encode(config)), config)
+        }
+        expectThrows(try Configuration.decode(Data("{\"version\":1,\"superKey\":\"unknown\",\"bindings\":[]}".utf8)))
+        let action = Action(type: .openApp, bundleIdentifier: "com.example.app")
+        expectThrows(try Configuration(bindings: [
+            Binding(input: Chord(key: "c", modifiers: [.fn]), action: action),
+            Binding(input: Chord(key: "c", modifiers: [.command]), action: action)
+        ], superKey: .command).validate())
+        expectThrows(try Configuration(bindings: [Binding(input: Chord(key: "c", modifiers: [.fn, .command]), action: action)], superKey: .command).validate())
+    }
     func testDefaultsRoundTrip() throws {
         let config = try Configuration.decode(JSONEncoder().encode(Configuration.initial))
         expectEqual(config, .initial)
