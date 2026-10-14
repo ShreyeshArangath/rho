@@ -48,18 +48,16 @@ final class EventTap {
         let flags = event.flags
         let code = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
         let timestamp = TimeInterval(event.timestamp) / 1_000_000_000
-        if type == .flagsChanged {
-            if code == Keys.function {
-                engine.functionKeyChanged(down: flags.contains(.maskSecondaryFn), timestamp: timestamp)
-            }
-            return Unmanaged.passUnretained(event)
-        }
         var modifiers = Set<Modifier>()
         if flags.contains(.maskShift) { modifiers.insert(.shift) }
         if flags.contains(.maskControl) { modifiers.insert(.control) }
         if flags.contains(.maskAlternate) { modifiers.insert(.option) }
         if flags.contains(.maskCommand) { modifiers.insert(.command) }
         if flags.contains(.maskSecondaryFn) { modifiers.insert(.fn) }
+        if type == .flagsChanged {
+            engine.launcherKeyChanged(down: modifiers.contains(engine.configuration.launcherModifier), timestamp: timestamp)
+            return Unmanaged.passUnretained(event)
+        }
         let output = engine.process(code: code,
                                     down: type == .keyDown,
                                     repeated: event.getIntegerValueField(.keyboardEventAutorepeat) != 0,

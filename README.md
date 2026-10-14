@@ -48,6 +48,10 @@ Only exact modifier combinations match. For example, Command + Shift + Space ret
 
 ## Configure shortcuts
 
+Choose **Super Key (hold 400 ms)** from the **ρ** menu to select Fn/Globe, Shift, Control, Option, or Command. Either side of the selected modifier works. The checkmark shows the current choice. Changes apply immediately and survive restarts; app letters stay the same. Fn/Globe remains the default.
+
+Ordinary shortcuts still work when you press their letter before 400 ms. Holding your selected modifier past 400 ms reserves the configured launcher letters for rho, so choose a modifier you can spare for that gesture. Shift + Space still sends Backspace.
+
 Choose **Open Configuration**, edit and save the file, then choose **Reload Configuration**. Invalid changes leave the previous working configuration active.
 
 The file is created on first run at:
@@ -63,6 +67,7 @@ Example configuration:
 ```json
 {
   "version": 1,
+  "superKey": "fn",
   "bindings": [
     {
       "input": { "key": "space", "modifiers": ["shift"] },
@@ -79,6 +84,8 @@ Example configuration:
   ]
 }
 ```
+
+The optional `superKey` field accepts `fn`, `shift`, `control`, `option`, or `command`; omitted means `fn`. In chord inputs, `fn` names the selected super key. Existing launcher bindings need no edits when you change it. A selection that would create duplicate shortcuts or duplicate modifiers is rejected without changing the saved settings.
 
 Input modifiers are `shift`, `control`, `option`, `command`, and `fn`. The input `modifiers` array is required; modifier order does not matter.
 

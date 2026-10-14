@@ -10,6 +10,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSMenuItem!
     private var toggleItem: NSMenuItem!
     private var loginItem: NSMenuItem!
+    private var superKeyItems: [NSMenuItem] = []
     private var timer: Timer?
     private var observers: [NSObjectProtocol] = []
     private var desiredRunning = true
@@ -30,6 +31,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.desiredRunning = false; self?.stop(reason: message)
             }
             configReady = true
+            updateSuperKeyMenu()
             reconcile()
         } catch { desiredRunning = false; setStatus(error.localizedDescription) }
         enableLaunchAtLogin()
@@ -55,6 +57,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(.separator())
         toggleItem = add("Pause", #selector(toggle), to: menu)
         _ = add("Grant Accessibility Permission…", #selector(grantPermission), to: menu)
+        let superKeyMenu = NSMenu()
+        for (title, modifier) in [("Fn / Globe", Modifier.fn), ("Shift ⇧", .shift), ("Control ⌃", .control), ("Option ⌥", .option), ("Command ⌘", .command)] {
+            let choice = add(title, #selector(selectSuperKey(_:)), to: superKeyMenu)
+            choice.representedObject = modifier.rawValue
+            superKeyItems.append(choice)
+        }
+        let superKeyItem = NSMenuItem(title: "Super Key (hold 400 ms)", action: nil, keyEquivalent: "")
+        superKeyItem.submenu = superKeyMenu
+        menu.addItem(superKeyItem)
         _ = add("Open Configuration", #selector(openConfig), to: menu)
         _ = add("Reload Configuration", #selector(reloadConfig), to: menu)
         loginItem = add("Launch at Login", #selector(toggleLogin), to: menu)
@@ -132,18 +143,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             NSWorkspace.shared.open([Storage.config], withApplicationAt: editor, configuration: NSWorkspace.OpenConfiguration())
         } catch { setStatus(error.localizedDescription) }
     }
+    private func updateSuperKeyMenu() {
+        for entry in superKeyItems {
+            entry.state = (entry.representedObject as? String) == eventTap?.engine.configuration.launcherModifier.rawValue ? .on : .off
+        }
+    }
+    @objc private func selectSuperKey(_ sender: NSMenuItem) {
+        guard let raw = sender.representedObject as? String, let modifier = Modifier(rawValue: raw) else { return }
+        do {
+            // Read the saved file so a menu change cannot overwrite edits made in an editor.
+            var config = try Storage.loadConfiguration()
+            config.superKey = modifier
+            try config.validate()
+            try Storage.save(config, at: Storage.config)
+            applyConfiguration(config)
+        } catch { setStatus("Super key unchanged: \(error.localizedDescription)") }
+    }
+    private func applyConfiguration(_ config: Configuration) {
+        if let eventTap { eventTap.releaseKeys(); eventTap.engine.configuration = config }
+        else {
+            eventTap = EventTap(configuration: config)
+            eventTap?.onLaunch = { [weak self] in self?.launch($0) }
+            eventTap?.onFailure = { [weak self] message in self?.desiredRunning = false; self?.stop(reason: message) }
+        }
+        configReady = true
+        updateSuperKeyMenu()
+        setStatus(running ? "Active — configuration updated" : "Configuration loaded")
+        reconcile()
+    }
     @objc private func reloadConfig() {
         do {
             let config = try Storage.loadConfiguration()
-            if let eventTap { eventTap.releaseKeys(); eventTap.engine.configuration = config }
-            else {
-                eventTap = EventTap(configuration: config)
-                eventTap?.onLaunch = { [weak self] in self?.launch($0) }
-                eventTap?.onFailure = { [weak self] message in self?.desiredRunning = false; self?.stop(reason: message) }
-            }
-            configReady = true
-            setStatus(running ? "Active — configuration reloaded" : "Configuration loaded")
-            reconcile()
+            applyConfiguration(config)
         } catch { setStatus("Configuration unchanged: \(error.localizedDescription)") }
     }
     private func enableLaunchAtLogin() {
