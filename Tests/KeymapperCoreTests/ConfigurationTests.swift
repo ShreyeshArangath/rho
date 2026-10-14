@@ -16,12 +16,12 @@ final class ConfigurationTests {
     }
     func testRejectInvalidVersionsKeysAndActions() {
         expectThrows(try Configuration(version: 2, bindings: []).validate())
-        for key in ["unknown", "caps_lock", "escape"] {
+        for key in ["unknown", "caps_lock", "fn"] {
             expectThrows(try Configuration(bindings: [Binding(input: Chord(key: key), action: Action(type: .sendKey, key: "space"))]).validate())
         }
         let invalid = [
             Action(type: .sendKey, key: "unknown"),
-            Action(type: .sendKey, key: "space", modifiers: [.escape]),
+            Action(type: .sendKey, key: "space", modifiers: [.fn]),
             Action(type: .sendKey, key: "space", modifiers: [.shift, .shift]),
             Action(type: .sendKey, key: "space", bundleIdentifier: "com.example.app"),
             Action(type: .openApp, bundleIdentifier: ""),

@@ -1,6 +1,6 @@
 import Foundation
 
-public enum Modifier: String, Codable, Hashable { case shift, control, option, command, escape }
+public enum Modifier: String, Codable, Hashable { case shift, control, option, command, fn }
 public struct Chord: Codable, Equatable {
     public var key: String
     public var modifiers: [Modifier]
@@ -30,7 +30,7 @@ public struct Configuration: Codable, Equatable {
         var seen = Set<String>()
         for (index, binding) in bindings.enumerated() {
             let label = "Binding \(index + 1)"
-            guard Keys.codes[binding.input.key] != nil, binding.input.key != "escape" else { throw ConfigError("\(label): unknown or reserved input key '\(binding.input.key)'.") }
+            guard Keys.codes[binding.input.key] != nil else { throw ConfigError("\(label): unknown or reserved input key '\(binding.input.key)'.") }
             guard Set(binding.input.modifiers).count == binding.input.modifiers.count else { throw ConfigError("\(label): repeated input modifier.") }
             let signature = binding.input.key + ":" + binding.input.modifiers.map(\.rawValue).sorted().joined(separator: "+")
             guard seen.insert(signature).inserted else { throw ConfigError("\(label): duplicate shortcut.") }
@@ -38,7 +38,7 @@ public struct Configuration: Codable, Equatable {
             case .sendKey:
                 guard let key = binding.action.key, Keys.codes[key] != nil else { throw ConfigError("\(label): sendKey requires a valid key.") }
                 let modifiers = binding.action.modifiers ?? []
-                guard !modifiers.contains(.escape), Set(modifiers).count == modifiers.count, binding.action.bundleIdentifier == nil else {
+                guard !modifiers.contains(.fn), Set(modifiers).count == modifiers.count, binding.action.bundleIdentifier == nil else {
                     throw ConfigError("\(label): sendKey permits only standard, non-repeated output modifiers and no bundleIdentifier.")
                 }
             case .openApp:
@@ -57,13 +57,13 @@ public struct Configuration: Codable, Equatable {
     }
     public static let initial = Configuration(bindings: [
         Binding(input: Chord(key: "space", modifiers: [.shift]), action: Action(type: .sendKey, key: "backspace")),
-        Binding(input: Chord(key: "c", modifiers: [.escape]), action: Action(type: .openApp, bundleIdentifier: "com.openai.codex")),
-        Binding(input: Chord(key: "b", modifiers: [.escape]), action: Action(type: .openApp, bundleIdentifier: "com.google.Chrome")),
-        Binding(input: Chord(key: "l", modifiers: [.escape]), action: Action(type: .openApp, bundleIdentifier: "com.linear")),
-        Binding(input: Chord(key: "o", modifiers: [.escape]), action: Action(type: .openApp, bundleIdentifier: "md.obsidian")),
-        Binding(input: Chord(key: "g", modifiers: [.escape]), action: Action(type: .openApp, bundleIdentifier: "com.mitchellh.ghostty")),
-        Binding(input: Chord(key: "s", modifiers: [.escape]), action: Action(type: .openApp, bundleIdentifier: "com.tinyspeck.slackmacgap")),
-        Binding(input: Chord(key: "n", modifiers: [.escape]), action: Action(type: .openApp, bundleIdentifier: "notion.id"))
+        Binding(input: Chord(key: "c", modifiers: [.fn]), action: Action(type: .openApp, bundleIdentifier: "com.openai.codex")),
+        Binding(input: Chord(key: "b", modifiers: [.fn]), action: Action(type: .openApp, bundleIdentifier: "com.google.Chrome")),
+        Binding(input: Chord(key: "l", modifiers: [.fn]), action: Action(type: .openApp, bundleIdentifier: "com.linear")),
+        Binding(input: Chord(key: "o", modifiers: [.fn]), action: Action(type: .openApp, bundleIdentifier: "md.obsidian")),
+        Binding(input: Chord(key: "g", modifiers: [.fn]), action: Action(type: .openApp, bundleIdentifier: "com.mitchellh.ghostty")),
+        Binding(input: Chord(key: "s", modifiers: [.fn]), action: Action(type: .openApp, bundleIdentifier: "com.tinyspeck.slackmacgap")),
+        Binding(input: Chord(key: "n", modifiers: [.fn]), action: Action(type: .openApp, bundleIdentifier: "notion.id"))
     ])
 }
 public struct ConfigError: LocalizedError {
@@ -73,7 +73,7 @@ public struct ConfigError: LocalizedError {
 }
 public enum Keys {
     // macOS virtual key codes: letter names refer to physical US keyboard positions.
-    public static let escape: UInt16 = 53
+    public static let function: UInt16 = 63
     public static let codes: [String: UInt16] = [
         "a":0,"s":1,"d":2,"f":3,"h":4,"g":5,"z":6,"x":7,"c":8,"v":9,"b":11,
         "q":12,"w":13,"e":14,"r":15,"y":16,"t":17,"1":18,"2":19,"3":20,"4":21,

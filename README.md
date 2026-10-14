@@ -29,20 +29,20 @@ Rebuilding changes the app's ad-hoc signature. macOS may require removing and re
 
 ## Shortcuts
 
-Hold the physical **Escape** key for at least **400 ms**, keep it held, then press the app letter. A short Escape tap sends normal Escape on release. Releasing a long press without using a shortcut also sends Escape. Modified Escape combinations, such as Command + Escape, pass through normally.
+Hold the **Fn/Globe** key for at least **400 ms**, keep it held, then press the app letter. Escape retains its ordinary behavior. Fn presses and unassigned Fn chords retain their native macOS behavior.
 
 | Input | Action |
 | --- | --- |
 | Either Shift + Space | Backspace, including held-key repeat |
-| Long-press Escape + C | Codex |
-| Long-press Escape + B | Chrome |
-| Long-press Escape + G | Ghostty |
-| Long-press Escape + S | Slack |
-| Long-press Escape + L | Linear |
-| Long-press Escape + O | Obsidian |
-| Long-press Escape + N | Notion |
+| Long-press Fn + C | Codex |
+| Long-press Fn + B | Chrome |
+| Long-press Fn + G | Ghostty |
+| Long-press Fn + S | Slack |
+| Long-press Fn + L | Linear |
+| Long-press Fn + O | Obsidian |
+| Long-press Fn + N | Notion |
 
-App actions open or focus the app once per press. Caps Lock retains its normal behavior; rho does not install system key mappings. An unassigned letter after a long Escape hold passes through without sending Escape. If you press a letter before 400 ms, rho sends Escape before that letter and cancels launcher activation until Escape is released.
+App actions open or focus the app once per press. Caps Lock retains its normal behavior; rho does not install system key mappings. A letter pressed before 400 ms keeps its native Fn behavior and cancels launcher activation until Fn is released. Fn is the modifier key, often marked with a globe, rather than one of F1 through F12.
 
 Only exact modifier combinations match. For example, Command + Shift + Space retains its normal behavior with the default configuration.
 
@@ -69,20 +69,20 @@ Example configuration:
       "action": { "type": "sendKey", "key": "backspace" }
     },
     {
-      "input": { "key": "c", "modifiers": ["escape"] },
+      "input": { "key": "c", "modifiers": ["fn"] },
       "action": { "type": "openApp", "bundleIdentifier": "com.openai.codex" }
     },
     {
-      "input": { "key": "h", "modifiers": ["escape"] },
+      "input": { "key": "h", "modifiers": ["fn"] },
       "action": { "type": "sendKey", "key": "left", "modifiers": ["command", "shift"] }
     }
   ]
 }
 ```
 
-Input modifiers are `shift`, `control`, `option`, `command`, and `escape`. The input `modifiers` array is required; modifier order does not matter.
+Input modifiers are `shift`, `control`, `option`, `command`, and `fn`. The input `modifiers` array is required; modifier order does not matter.
 
-`sendKey` requires an output `key`. Output `modifiers` defaults to none and permits standard modifiers only, excluding `escape`. Do not include a bundle identifier.
+`sendKey` requires an output `key`. Output `modifiers` defaults to none and permits standard modifiers only, excluding `fn`. Do not include a bundle identifier.
 
 `openApp` requires a `bundleIdentifier`. Do not include output keys or modifiers. Launching uses `NSWorkspace`, without shell commands from configuration. For Chrome-installed apps, use their own bundle identifier in your local configuration.
 
@@ -96,7 +96,7 @@ Starter defaults use standard app bundle identifiers. Codex uses `com.openai.cod
 
 Key names refer to physical US keyboard positions. Supported names are `a` through `z`, `0` through `9`, `space`, `backspace`, `escape`, `return`, `tab`, `left`, `right`, `up`, `down`, `home`, `end`, `page_up`, `page_down`, `forward_delete`, `f1` through `f18`, `equal`, `minus`, `left_bracket`, `right_bracket`, `quote`, `semicolon`, `backslash`, `comma`, `slash`, `period`, and `grave`.
 
-Escape is reserved as the launcher input, but it can be a `sendKey` output. Duplicate chords, repeated modifiers, invalid keys and actions, malformed JSON, and unsupported versions are rejected. Fn keys, media keys, and released-key sequences are not supported.
+Fn is an input modifier, not an ordinary input or output key. Escape can be configured as an ordinary key. Duplicate chords, repeated modifiers, invalid keys and actions, malformed JSON, and unsupported versions are rejected. Media keys and released-key sequences are not supported. A keyboard must expose its Fn modifier to macOS; firmware-only Fn keys cannot be intercepted. If your single-press Globe action opens an input picker or emoji panel that interferes with launching, choose **Do Nothing** under **System Settings → Keyboard → Press Fn/Globe key to**.
 
 ## Pause, recovery, and removal
 
@@ -120,12 +120,12 @@ To remove rho, disable **Launch at Login**, choose **Quit**, and remove its Acce
 
 ## Verify behavior
 
-`./scripts/test.sh` checks the shortcut engine and legacy recovery without changing your keyboard. Tests cover Escape taps, the 400 ms threshold, quick typing after Escape, modified Escape, release ordering, repeat suppression, all seven launch actions, Backspace repeat, reset/release behavior, configuration validation, and preservation of unrelated legacy mappings.
+`./scripts/test.sh` checks the shortcut engine and legacy recovery without changing your keyboard. Tests cover normal Escape, the 400 ms Fn threshold, native short Fn chords, release ordering, repeat suppression, all seven launch actions, Backspace repeat, reset/release behavior, configuration validation, and preservation of unrelated legacy mappings.
 
 After granting Accessibility permission:
 
-1. In a disposable text document, tap Escape and try each app letter after holding Escape for 400 ms. Release Escape before pressing a letter to confirm it does not launch.
-2. Press Escape and a letter before 400 ms. Check that Escape and the letter reach the document normally. Hold a launcher letter to confirm the app opens only once.
+1. In a disposable text document, tap Escape and try each app letter after holding Fn for 400 ms. Release Fn before pressing a letter to confirm it does not launch.
+2. Press Fn and a letter before 400 ms. Check that the native Fn behavior remains available. Hold a launcher letter to confirm the app opens only once.
 3. Test both Shift keys with Space, held repeat, releasing Shift before Space, plain Space, and Command + Shift + Space.
 4. Check normal Caps Lock behavior, pause and resume, sleep and wake, keyboard reconnection, and permission revocation. No synthetic keys should remain held.
 5. Save and reload a custom shortcut. Try an invalid key or duplicate chord, then check that the previous configuration still works. Try a missing app and check the menu's error message.
