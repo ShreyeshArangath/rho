@@ -8,4 +8,6 @@ fi
 ./scripts/build.sh
 mkdir -p "$HOME/Applications"
 ditto "$PWD/dist/rho.app" "$HOME/Applications/rho.app"
+mkdir -p "$HOME/.local/bin"
+install -m 755 dist/rho "$HOME/.local/bin/rho"
 open "$HOME/Applications/rho.app"

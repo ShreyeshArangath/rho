@@ -19,6 +19,12 @@ func expectThrows<T>(_ expression: @autoclosure () throws -> T, file: StaticStri
 }
 
 var tests: [(String, () throws -> Void)] = []
+let cliTests = CLICommandTests()
+tests.append(("CLICommandTests.testParsesCommandsAndRejectsInvalidInput", cliTests.testParsesCommandsAndRejectsInvalidInput))
+tests.append(("CLICommandTests.testBindPreservesOtherShortcutsAndAppliesWithSelectedSuperKey", cliTests.testBindPreservesOtherShortcutsAndAppliesWithSelectedSuperKey))
+tests.append(("CLICommandTests.testUnbindPreservesOtherActionsAndIsIdempotent", cliTests.testUnbindPreservesOtherActionsAndIsIdempotent))
+tests.append(("CLICommandTests.testDefaultZoomShortcutWithFnAndControlOption", cliTests.testDefaultZoomShortcutWithFnAndControlOption))
+tests.append(("CLICommandTests.testUnbindDoesNotDeleteAKeyRemapOnTheSameChord", cliTests.testUnbindDoesNotDeleteAKeyRemapOnTheSameChord))
 let chromeProfileTests = ChromeProfileTests()
 tests.append(("ChromeProfileTests.testReadsOnlyTheSelectedProfileLock", chromeProfileTests.testReadsOnlyTheSelectedProfileLock))
 tests.append(("ChromeProfileTests.testRejectsMalformedProfileLocks", chromeProfileTests.testRejectsMalformedProfileLocks))
@@ -35,7 +41,7 @@ tests.append(("EngineTests.testChangingSuperKeyClearsHoldAndKeepsActions", engin
 tests.append(("EngineTests.testFunctionThresholdAndQuickChordCancellation", engineTests.testFunctionThresholdAndQuickChordCancellation))
 tests.append(("EngineTests.testFunctionMustStayHeld", engineTests.testFunctionMustStayHeld))
 tests.append(("EngineTests.testFunctionFlagWithoutPressDoesNotLaunch", engineTests.testFunctionFlagWithoutPressDoesNotLaunch))
-tests.append(("EngineTests.testAllSevenDefaultLaunchersAfterLongPress", engineTests.testAllSevenDefaultLaunchersAfterLongPress))
+tests.append(("EngineTests.testAllDefaultLaunchersAfterLongPress", engineTests.testAllDefaultLaunchersAfterLongPress))
 tests.append(("EngineTests.testEscapeAndCapsLockPassThrough", engineTests.testEscapeAndCapsLockPassThrough))
 tests.append(("EngineTests.testShiftSpaceRepeatsAndReleasesEvenAfterShiftReleased", engineTests.testShiftSpaceRepeatsAndReleasesEvenAfterShiftReleased))
 tests.append(("EngineTests.testExtraModifiersAreNotMatched", engineTests.testExtraModifiersAreNotMatched))

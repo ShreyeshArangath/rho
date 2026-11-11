@@ -71,7 +71,7 @@ final class EngineTests {
         let engine = Engine(configuration: .initial)
         expectEqual(engine.process(code: 5, down: true, modifiers: [.fn], timestamp: 1), .pass)
     }
-    func testAllSevenDefaultLaunchersAfterLongPress() {
+    func testAllDefaultLaunchersAfterLongPress() {
         for binding in Configuration.initial.bindings where binding.action.type == .openApp {
             let engine = Engine(configuration: .initial)
             engine.launcherKeyChanged(down: true, timestamp: 0)

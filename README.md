@@ -11,7 +11,7 @@ With Apple's Command Line Tools installed, run:
 ./scripts/install.sh
 ```
 
-The installer builds and signs the app locally, installs `~/Applications/rho.app`, and opens it. Click the Greek **ρ** icon in the menu bar for controls. There is no Dock icon or main window.
+The installer builds and signs the app locally, installs `~/Applications/rho.app` and the terminal command `~/.local/bin/rho`, and opens the app. Add `~/.local/bin` to your shell's PATH if needed. Click the Greek **ρ** icon in the menu bar for controls. There is no Dock icon or main window.
 
 Choose **Grant Accessibility Permission…** and enable **rho** in **System Settings → Privacy & Security → Accessibility**. Reopen the app if macOS requests it, then choose **Resume**. Keyboard remapping stays inactive until permission is available.
 
@@ -27,6 +27,34 @@ The output is `dist/rho.app`. Scripts use `swiftc` directly; Swift Package Manag
 
 Rebuilding changes the app's ad-hoc signature. macOS may require removing and re-adding its Accessibility entry afterward. A Developer ID signature can replace ad-hoc signing if you have one. This build is for local use and is not notarized.
 
+## Terminal command
+
+If rho.app is already installed, install only the command without replacing the app or changing its Accessibility approval:
+
+```sh
+./scripts/install-cli.sh
+```
+
+Run `rho` to start the app in the background. Use these commands to manage it:
+
+```sh
+rho status
+rho stop
+rho start
+rho restart
+rho shortcuts
+rho bind z us.zoom.xos
+rho unbind z
+rho config
+rho help
+```
+
+`bind` assigns a launcher key using your selected super key. It preserves other shortcuts and requires an installed app's bundle identifier. `unbind` removes that launcher and preserves key remaps such as Shift + Space. Both commands restart a running rho.app to apply changed settings. A restart clears the menu's Pause state. If the app is stopped, the settings apply at its next start. `rho restart` also applies manual edits to the configuration file. `rho config` prints that file's path.
+
+The command manages the app at `~/Applications/rho.app`. Quit any development copy before starting the installed app. For an existing configuration, add the new Zoom shortcut with `rho bind z us.zoom.xos`; updating the defaults does not overwrite your saved settings.
+
+`rho status` exits successfully only when the installed app has an enabled keyboard event tap. A stopped app or inactive remapping returns exit code 1. It does not request Accessibility access for the terminal command.
+
 ## Shortcuts
 
 Hold the **Fn/Globe** key for at least **400 ms**, keep it held, then press the app letter. Escape retains its ordinary behavior. Fn presses and unassigned Fn chords retain their native macOS behavior.
@@ -41,6 +69,7 @@ Hold the **Fn/Globe** key for at least **400 ms**, keep it held, then press the 
 | Long-press Fn + L | Linear |
 | Long-press Fn + O | Obsidian |
 | Long-press Fn + N | Notion |
+| Long-press Fn + Z | Zoom |
 
 App actions open or focus the app once per press. Chrome uses its normal user-data directory, so a separate Chrome instance used by another app cannot receive the shortcut. Caps Lock retains its normal behavior; rho does not install system key mappings. A letter pressed before 400 ms keeps its native Fn behavior and cancels launcher activation until Fn is released. Fn is the modifier key, often marked with a globe, rather than one of F1 through F12.
 
@@ -129,7 +158,7 @@ To remove rho, disable **Launch at Login**, choose **Quit**, and remove its Acce
 
 ## Verify behavior
 
-`./scripts/test.sh` checks the shortcut engine and legacy recovery without changing your keyboard. Tests cover normal Escape, the 400 ms Fn threshold, native short Fn chords, release ordering, repeat suppression, all seven launch actions, Backspace repeat, reset/release behavior, configuration validation, and preservation of unrelated legacy mappings.
+`./scripts/test.sh` checks the shortcut engine, CLI argument parsing and shortcut edits, and legacy recovery without changing your keyboard. Tests cover normal Escape, the 400 ms Fn threshold, native short Fn chords, release ordering, repeat suppression, all default launch actions including Zoom, Backspace repeat, reset/release behavior, configuration validation, and preservation of unrelated shortcuts and legacy mappings.
 
 After granting Accessibility permission:
 
