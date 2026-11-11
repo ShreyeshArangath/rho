@@ -90,7 +90,8 @@ public struct Configuration: Codable, Equatable {
         Binding(input: Chord(key: "o", modifiers: [.fn]), action: Action(type: .openApp, bundleIdentifier: "md.obsidian")),
         Binding(input: Chord(key: "g", modifiers: [.fn]), action: Action(type: .openApp, bundleIdentifier: "com.mitchellh.ghostty")),
         Binding(input: Chord(key: "s", modifiers: [.fn]), action: Action(type: .openApp, bundleIdentifier: "com.tinyspeck.slackmacgap")),
-        Binding(input: Chord(key: "n", modifiers: [.fn]), action: Action(type: .openApp, bundleIdentifier: "notion.id"))
+        Binding(input: Chord(key: "n", modifiers: [.fn]), action: Action(type: .openApp, bundleIdentifier: "notion.id")),
+        Binding(input: Chord(key: "z", modifiers: [.fn]), action: Action(type: .openApp, bundleIdentifier: "us.zoom.xos"))
     ])
 }
 public struct ConfigError: LocalizedError {

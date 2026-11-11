@@ -36,3 +36,4 @@ PLIST
 plutil -lint "$APP/Contents/Info.plist"
 codesign --force --sign - --identifier local.privatekeymapper.app "$APP"
 printf 'Built: %s\n' "$APP"
+./scripts/build-cli.sh

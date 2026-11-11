@@ -6,3 +6,4 @@ source scripts/toolchain.sh
     -I .build/local -L .build/local -lKeymapperCore Tests/KeymapperCoreTests/*.swift \
     -o .build/local/CoreTests
 .build/local/CoreTests
+bash Tests/installer.sh

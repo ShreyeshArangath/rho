@@ -1,144 +1,108 @@
+<p align="center">
+  <img src="docs/assets/rho-keycap.png" width="840" alt="A single teal keyboard keycap with a cream Greek rho symbol.">
+</p>
+
 # rho
 
-rho is a local macOS menu-bar app for keyboard shortcuts and app launching. It processes keyboard events on your Mac, with no network code, telemetry, keystroke logging, third-party dependencies, or keyboard driver. Requires macOS 13 or later and Accessibility permission.
+rho launches apps and remaps keys on macOS. It runs in the menu bar and comes with a `rho` terminal command.
+
+[Install](#install) · [Shortcuts](#shortcuts) · [CLI](#terminal-command) · [Wiki](docs/README.md)
 
 ## Install
 
-With Apple's Command Line Tools installed, run:
+Requires macOS 13 or later and [Apple Command Line Tools](docs/installation.md#requirements).
+The installer builds rho from source on your Mac.
 
 ```sh
-./scripts/test.sh
-./scripts/install.sh
+curl -fsSL https://raw.githubusercontent.com/ShreyeshArangath/rho/main/install.sh | bash
 ```
 
-The installer builds and signs the app locally, installs `~/Applications/rho.app`, and opens it. Click the Greek **ρ** icon in the menu bar for controls. There is no Dock icon or main window.
+From a checkout, run `./install.sh`.
+The app goes in `~/Applications/rho.app`, and the command goes in `~/.local/bin/rho`.
 
-Choose **Grant Accessibility Permission…** and enable **rho** in **System Settings → Privacy & Security → Accessibility**. Reopen the app if macOS requests it, then choose **Resume**. Keyboard remapping stays inactive until permission is available.
+1. Choose **ρ → Grant Accessibility Permission…** from the menu bar.
+2. Enable **rho** in **System Settings → Privacy & Security → Accessibility**. Reopen the app if macOS requests it.
+3. Open a new terminal so your shell picks up the command's PATH entry.
+4. Run `rho status` to check that keyboard remapping is active.
 
-rho registers **Launch at Login** when it starts. Approve the login item in System Settings if macOS requests it. You can disable it from the menu; manually opening rho registers it again if it is unregistered.
+Click **ρ** in the menu bar for **Super Key**, **Pause**, and configuration controls.
+rho has no Dock icon or main window. It registers to launch at login.
 
-To build without installing or opening the app:
+Install only the terminal command:
 
 ```sh
-./scripts/build.sh
+curl -fsSL https://raw.githubusercontent.com/ShreyeshArangath/rho/main/install.sh | bash -s -- --cli-only
 ```
 
-The output is `dist/rho.app`. Scripts use `swiftc` directly; Swift Package Manager and XCTest are not required. To select a different SDK, run `KEYMAPPER_SDK=/path/to/MacOSX.sdk ./scripts/build.sh`. `Package.swift` supports editors and SwiftPM; `swift run CoreTests` runs the tests when SwiftPM is available.
+Re-running the default installer updates the CLI and keeps the app's existing Accessibility approval.
+Use [`--update`](docs/installation.md#update-the-app) to rebuild and replace the app.
+Installation and updates keep your saved shortcuts.
 
-Rebuilding changes the app's ad-hoc signature. macOS may require removing and re-adding its Accessibility entry afterward. A Developer ID signature can replace ad-hoc signing if you have one. This build is for local use and is not notarized.
+The source build is ad-hoc signed and is not notarized.
+Rebuilding the app may require [refreshing its Accessibility approval](docs/troubleshooting.md#accessibility-is-enabled-but-rho-is-inactive).
 
 ## Shortcuts
 
-Hold the **Fn/Globe** key for at least **400 ms**, keep it held, then press the app letter. Escape retains its ordinary behavior. Fn presses and unassigned Fn chords retain their native macOS behavior.
+By default, hold **Fn/Globe** for **400 ms**, keep it held, then press a letter.
 
-| Input | Action |
+| Shortcut | Action |
 | --- | --- |
-| Either Shift + Space | Backspace, including held-key repeat |
-| Long-press Fn + C | Codex |
-| Long-press Fn + B | Chrome |
-| Long-press Fn + G | Ghostty |
-| Long-press Fn + S | Slack |
-| Long-press Fn + L | Linear |
-| Long-press Fn + O | Obsidian |
-| Long-press Fn + N | Notion |
+| Fn + C | Codex |
+| Fn + B | Chrome |
+| Fn + G | Ghostty |
+| Fn + S | Slack |
+| Fn + L | Linear |
+| Fn + O | Obsidian |
+| Fn + N | Notion |
+| Fn + Z | Zoom |
+| Shift + Space | Backspace, including held repeat |
 
-App actions open or focus the app once per press. Caps Lock retains its normal behavior; rho does not install system key mappings. A letter pressed before 400 ms keeps its native Fn behavior and cancels launcher activation until Fn is released. Fn is the modifier key, often marked with a globe, rather than one of F1 through F12.
+Choose **Super Key → Control + Option** in the **ρ** menu for instant app shortcuts.
+For example, **Control + Option + Z** opens Zoom with no hold delay.
+This combination overlaps VoiceOver's default modifier. Choose another super key if you use VoiceOver.
 
-Only exact modifier combinations match. For example, Command + Shift + Space retains its normal behavior with the default configuration.
+Fn/Globe, Shift, Control, Option, and Command are also available with the 400 ms hold.
+Escape and Caps Lock keep their normal behavior.
 
-## Configure shortcuts
+[Shortcut behavior and keyboard support](docs/shortcuts.md)
 
-Choose **Super Key** from the **ρ** menu to select Fn/Globe, Shift, Control, Option, Command, or **Control + Option**. Either side of the selected modifier works. The checkmark shows the current choice. Changes apply immediately and survive restarts; app letters stay the same. Fn/Globe remains the default for new installations.
+## Terminal command
 
-**Control + Option** launches immediately: hold both and press the app letter, with no delay. Either side of each modifier works. Control or Option alone keeps its normal behavior. Unassigned combinations and combinations with extra modifiers pass through. This combination overlaps VoiceOver’s default modifier; choose another super key if you use VoiceOver. Single-modifier selections still require a 400 ms hold.
-
-Ordinary shortcuts still work when you press their letter before 400 ms. Holding your selected modifier past 400 ms reserves the configured launcher letters for rho, so choose a modifier you can spare for that gesture. Shift + Space still sends Backspace.
-
-Choose **Open Configuration**, edit and save the file, then choose **Reload Configuration**. Invalid changes leave the previous working configuration active.
-
-The file is created on first run at:
-
-```text
-~/Library/Application Support/PrivateKeymapper/config.json
-```
-
-The storage folder keeps its original name so existing settings survive app updates. It is outside the repository. Personal settings, recovery snapshots, and browser-profile app identifiers are not included in the source.
-
-Example configuration:
-
-```json
-{
-  "version": 1,
-  "superKey": "fn",
-  "bindings": [
-    {
-      "input": { "key": "space", "modifiers": ["shift"] },
-      "action": { "type": "sendKey", "key": "backspace" }
-    },
-    {
-      "input": { "key": "c", "modifiers": ["fn"] },
-      "action": { "type": "openApp", "bundleIdentifier": "com.openai.codex" }
-    },
-    {
-      "input": { "key": "h", "modifiers": ["fn"] },
-      "action": { "type": "sendKey", "key": "left", "modifiers": ["command", "shift"] }
-    }
-  ]
-}
-```
-
-The optional `superKey` field accepts `fn`, `shift`, `control`, `option`, `command`, or `controlOption`; omitted means `fn`. In chord inputs, `fn` names the selected super key. Existing launcher bindings need no edits when you change it. A selection that would create duplicate shortcuts or duplicate modifiers is rejected without changing the saved settings.
-
-Input modifiers are `shift`, `control`, `option`, `command`, and `fn`. The input `modifiers` array is required; modifier order does not matter.
-
-`sendKey` requires an output `key`. Output `modifiers` defaults to none and permits standard modifiers only, excluding `fn`. Do not include a bundle identifier.
-
-`openApp` requires a `bundleIdentifier`. Do not include output keys or modifiers. Launching uses `NSWorkspace`, without shell commands from configuration. For Chrome-installed apps, use their own bundle identifier in your local configuration.
-
-Find an app's bundle identifier with:
+Run `rho` to start the app in the background.
 
 ```sh
-plutil -extract CFBundleIdentifier raw '/Applications/Notion.app/Contents/Info.plist'
+rho status
+rho shortcuts
+rho bind z us.zoom.xos
+rho restart
+rho stop
+rho help
 ```
 
-Starter defaults use standard app bundle identifiers. Codex uses `com.openai.codex`; the desktop app may be named ChatGPT. Linear's native app uses `com.linear`.
+`rho bind` assigns an app to your selected super key and a letter. Other shortcuts stay as they are.
+The CLI restarts rho after a binding changes. Only the menu-bar app needs Accessibility permission.
 
-Key names refer to physical US keyboard positions. Supported names are `a` through `z`, `0` through `9`, `space`, `backspace`, `escape`, `return`, `tab`, `left`, `right`, `up`, `down`, `home`, `end`, `page_up`, `page_down`, `forward_delete`, `f1` through `f18`, `equal`, `minus`, `left_bracket`, `right_bracket`, `quote`, `semicolon`, `backslash`, `comma`, `slash`, `period`, and `grave`.
+For an existing configuration, run `rho bind z us.zoom.xos` to add Zoom.
+New defaults do not overwrite saved settings.
 
-Fn is an input modifier, not an ordinary input or output key. Escape can be configured as an ordinary key. Duplicate chords, repeated modifiers, invalid keys and actions, malformed JSON, and unsupported versions are rejected. Media keys and released-key sequences are not supported. A keyboard must expose its Fn modifier to macOS; firmware-only Fn keys cannot be intercepted. If your single-press Globe action opens an input picker or emoji panel that interferes with launching, choose **Do Nothing** under **System Settings → Keyboard → Press Fn/Globe key to**.
+[All CLI commands](docs/cli.md) · [Configuration file](docs/configuration.md)
 
-## Pause, recovery, and removal
+## Privacy
 
-**Pause** and **Quit** release synthetic keys and stop interception. No system mappings are installed.
+The app processes keyboard events on your Mac. It has no network code, telemetry, or keystroke logging.
+It uses macOS Accessibility APIs without a keyboard driver or third-party runtime dependencies.
+Secure Input and the login screen can prevent remapping.
 
-If you previously used the Caps Lock version, startup restores its saved Caps mapping before enabling the new engine. Recovery can also be run after quitting:
+## Wiki
 
-```sh
-./scripts/recover.sh
-```
+[Wiki index](docs/README.md)
 
-Without the source folder:
-
-```sh
-"$HOME/Applications/rho.app/Contents/MacOS/PrivateKeymapper" --recover
-```
-
-Recovery only undoes the old Caps-to-F18 mapping when it is still present. It preserves unrelated mappings and subsequent Caps changes. It uses `caps-recovery.json` in the app's settings folder and refuses to run while another instance is running. Do not delete that file before recovery succeeds.
-
-To remove rho, disable **Launch at Login**, choose **Quit**, and remove its Accessibility entry. Delete `~/Applications/rho.app`. After any legacy recovery succeeds, you can also remove the settings folder. No privileged helper or launch daemon is installed.
-
-## Verify behavior
-
-`./scripts/test.sh` checks the shortcut engine and legacy recovery without changing your keyboard. Tests cover normal Escape, the 400 ms Fn threshold, native short Fn chords, release ordering, repeat suppression, all seven launch actions, Backspace repeat, reset/release behavior, configuration validation, and preservation of unrelated legacy mappings.
-
-After granting Accessibility permission:
-
-1. In a disposable text document, tap Escape and try each app letter after holding Fn for 400 ms. Release Fn before pressing a letter to confirm it does not launch.
-2. Press Fn and a letter before 400 ms. Check that the native Fn behavior remains available. Hold a launcher letter to confirm the app opens only once.
-3. Test both Shift keys with Space, held repeat, releasing Shift before Space, plain Space, and Command + Shift + Space.
-4. Check normal Caps Lock behavior, pause and resume, sleep and wake, keyboard reconnection, and permission revocation. No synthetic keys should remain held.
-5. Save and reload a custom shortcut. Try an invalid key or duplicate chord, then check that the previous configuration still works. Try a missing app and check the menu's error message.
-
-Secure Input, the login screen, and apps that bypass Quartz events cannot be guaranteed to receive remaps. Secure Input and permissions are checked every two seconds. Event-tap interruption pauses remapping and requires **Resume**. Permission loss, sleep, and Secure Input suspend it automatically.
-
-No keyboard-event history is stored. Only state needed for holds and matching key-down/key-up events stays in memory. Startup diagnostics report app status and login registration, never typed content.
+| Guide | What it covers |
+| --- | --- |
+| [Installation](docs/installation.md) | First install, CLI-only install, updates, and PATH |
+| [Shortcuts](docs/shortcuts.md) | Defaults, super keys, timing, and keyboard support |
+| [Configuration](docs/configuration.md) | JSON format, custom remaps, and validation |
+| [CLI](docs/cli.md) | Commands, arguments, and exit codes |
+| [Troubleshooting](docs/troubleshooting.md) | Permissions, inactive shortcuts, and legacy recovery |
+| [Uninstall](docs/uninstall.md) | Remove the app, command, and optional saved settings |
+| [Development](docs/development.md) | Build, tests, signing, and manual verification |
