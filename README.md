@@ -42,7 +42,7 @@ Hold the **Fn/Globe** key for at least **400 ms**, keep it held, then press the 
 | Long-press Fn + O | Obsidian |
 | Long-press Fn + N | Notion |
 
-App actions open or focus the app once per press. Caps Lock retains its normal behavior; rho does not install system key mappings. A letter pressed before 400 ms keeps its native Fn behavior and cancels launcher activation until Fn is released. Fn is the modifier key, often marked with a globe, rather than one of F1 through F12.
+App actions open or focus the app once per press. Chrome uses its normal user-data directory, so a separate Chrome instance used by another app cannot receive the shortcut. Caps Lock retains its normal behavior; rho does not install system key mappings. A letter pressed before 400 ms keeps its native Fn behavior and cancels launcher activation until Fn is released. Fn is the modifier key, often marked with a globe, rather than one of F1 through F12.
 
 Only exact modifier combinations match. For example, Command + Shift + Space retains its normal behavior with the default configuration.
 

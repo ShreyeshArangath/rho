@@ -19,6 +19,9 @@ func expectThrows<T>(_ expression: @autoclosure () throws -> T, file: StaticStri
 }
 
 var tests: [(String, () throws -> Void)] = []
+let chromeProfileTests = ChromeProfileTests()
+tests.append(("ChromeProfileTests.testReadsOnlyTheSelectedProfileLock", chromeProfileTests.testReadsOnlyTheSelectedProfileLock))
+tests.append(("ChromeProfileTests.testRejectsMalformedProfileLocks", chromeProfileTests.testRejectsMalformedProfileLocks))
 let configurationTests = ConfigurationTests()
 tests.append(("ConfigurationTests.testDefaultsRoundTrip", configurationTests.testDefaultsRoundTrip))
 tests.append(("ConfigurationTests.testDuplicateRegardlessOfModifierOrder", configurationTests.testDuplicateRegardlessOfModifierOrder))

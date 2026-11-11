@@ -121,6 +121,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             setStatus("App unavailable: \(identifier)"); return
         }
         let config = NSWorkspace.OpenConfiguration(); config.activates = true
+        if identifier == "com.google.Chrome" {
+            let profile = ChromeProfile()
+            if let pid = profile.processIdentifier,
+               let app = NSRunningApplication(processIdentifier: pid), app.bundleIdentifier == identifier,
+               app.activate(options: []) { return }
+            config.createsNewApplicationInstance = true
+            config.arguments = ["--user-data-dir=\(profile.directory.path)"]
+        }
         NSWorkspace.shared.openApplication(at: url, configuration: config) { [weak self] _, error in
             if let error { DispatchQueue.main.async { self?.setStatus("Could not open app: \(error.localizedDescription)") } }
         }
