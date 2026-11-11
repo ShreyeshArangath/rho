@@ -4,10 +4,7 @@
 
 # rho
 
-Your apps, one shortcut away.
-
-rho is a local macOS keyboard remapper with a menu-bar app and a terminal command.
-Hold your super key, press a letter, and open or focus an app.
+rho launches apps and remaps keys on macOS. It runs in the menu bar and comes with a `rho` terminal command.
 
 [Install](#install) · [Shortcuts](#shortcuts) · [CLI](#terminal-command) · [Wiki](docs/README.md)
 
@@ -31,15 +28,18 @@ The app goes in `~/Applications/rho.app`, and the command goes in `~/.local/bin/
 Click **ρ** in the menu bar for **Super Key**, **Pause**, and configuration controls.
 rho has no Dock icon or main window. It registers to launch at login.
 
-Already have the app? Install only the terminal command:
+Install only the terminal command:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/ShreyeshArangath/rho/main/install.sh | bash -s -- --cli-only
 ```
 
-Repeating the default install refreshes the CLI and preserves your existing app's Accessibility approval.
-Use [`--update`](docs/installation.md#update-the-app) when you want to rebuild and replace the app.
-Your saved shortcuts survive installation and updates.
+Re-running the default installer updates the CLI and keeps the app's existing Accessibility approval.
+Use [`--update`](docs/installation.md#update-the-app) to rebuild and replace the app.
+Installation and updates keep your saved shortcuts.
+
+The source build is ad-hoc signed and is not notarized.
+Rebuilding the app may require [refreshing its Accessibility approval](docs/troubleshooting.md#accessibility-is-enabled-but-rho-is-inactive).
 
 ## Shortcuts
 
@@ -79,27 +79,23 @@ rho stop
 rho help
 ```
 
-`bind` assigns an app to a letter using your selected super key and preserves your other shortcuts.
-Changed bindings restart the running app to apply the settings.
-The CLI manages the installed app without replacing it or requesting its own Accessibility access.
+`rho bind` assigns an app to your selected super key and a letter. Other shortcuts stay as they are.
+The CLI restarts rho after a binding changes. Only the menu-bar app needs Accessibility permission.
 
 For an existing configuration, run `rho bind z us.zoom.xos` to add Zoom.
 New defaults do not overwrite saved settings.
 
 [All CLI commands](docs/cli.md) · [Configuration file](docs/configuration.md)
 
-## Local keyboard processing
+## Privacy
 
 The app processes keyboard events on your Mac. It has no network code, telemetry, or keystroke logging.
 It uses macOS Accessibility APIs without a keyboard driver or third-party runtime dependencies.
 Secure Input and the login screen can prevent remapping.
 
-The source build is ad-hoc signed and is not notarized.
-Rebuilding the app may require [refreshing its Accessibility approval](docs/troubleshooting.md#accessibility-is-enabled-but-rho-is-inactive).
-
 ## Wiki
 
-The [checked-in wiki](docs/README.md) covers setup, daily use, and development.
+[Wiki index](docs/README.md)
 
 | Guide | What it covers |
 | --- | --- |
