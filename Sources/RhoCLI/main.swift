@@ -11,7 +11,7 @@ struct RhoCLI {
 
     private func start() throws {
         guard FileManager.default.isExecutableFile(atPath: appURL.appendingPathComponent("Contents/MacOS/PrivateKeymapper").path) else {
-            throw ConfigError("rho.app is not installed at \(appURL.path). Run scripts/install.sh from the rho repository.")
+            throw ConfigError("rho.app is not installed at \(appURL.path). See https://github.com/ShreyeshArangath/rho#install.")
         }
         if application != nil { print("rho is already running."); return }
         if NSRunningApplication.runningApplications(withBundleIdentifier: "local.privatekeymapper.app").contains(where: { !$0.isTerminated }) {
